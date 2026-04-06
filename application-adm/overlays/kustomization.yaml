@@ -31,8 +31,8 @@ patches:
       path: /spec/ports
       value:
         - name: http 
-          port: 8080      # 따옴표 절대 금지! 숫자만!
-          targetPort: 8080 # 숫자만!
+          port: 8080
+          targetPort: 8080
   target:
     kind: Service
     name: application-seonhee-svc
@@ -50,14 +50,22 @@ patches:
 
 - patch: |-
     - op: replace
+      path: /spec/template/spec/containers/0/ports/0/containerPort
+      value: 8080    # <--- 따옴표 없는 순수 숫자여야 합니다!
+  target:
+    kind: Deployment
+    name: application-seonhee-deploy
+
+- patch: |-
+    - op: replace
       path: /spec/template/spec/containers/0/livenessProbe
       value:
         httpGet:
           path: /actuator/health/liveness
           port: 8080
-        initialDelaySeconds: 60 # 숫자만!
-        periodSeconds: 10      # 숫자만!
-        timeoutSeconds: 5       # 숫자만!
+        initialDelaySeconds: 60
+        periodSeconds: 10
+        timeoutSeconds: 5
   target:
     kind: Deployment
     name: application-seonhee-deploy
@@ -72,6 +80,18 @@ patches:
         initialDelaySeconds: 60
         periodSeconds: 10
         timeoutSeconds: 5
+  target:
+    kind: Deployment
+    name: application-seonhee-deploy
+
+- patch: |-
+    - op: add
+      path: /spec/template/spec/containers/0/resources
+      value:
+        requests:
+          memory: 1Gi
+        limits:
+          memory: 1Gi
   target:
     kind: Deployment
     name: application-seonhee-deploy
