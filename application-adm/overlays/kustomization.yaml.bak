@@ -12,39 +12,39 @@ resources:
 ##          Image          ##
 #############################
 images:
-- name: :init  # base/deployment.yaml의 image 명칭과 일치시킴
+- name: <PATCH>:init
   newName: sh-registry.ncr.gov-ntruss.com/application
   newTag: '240802132835'
 
 
 
 #############################
-##        Namespace         ##
+##       Namespace         ##
 #############################
-namespace: application-seonhee
+namespace: application-adm
 
 
 #############################
 ##          Labels         ##
 #############################
 commonLabels:
-  name: application-seonhee
+  name: application-adm
 
 
 #############################
-##            Patch          ##
+##        	Patch          ##
 #############################
 patches:
 #############################
-##            Service        ##
+##        	Service        ##
 #############################
 - patch: |-
     - op: replace
       path: /metadata/name
-      value: application-seonhee-svc
+      value: application-adm
   target:
     kind: Service
-    name: application-seonhee-svc # base/service.yaml에 적힌 원본 이름
+    name: <PATCH>
 
 - patch: |-
     - op: replace
@@ -55,10 +55,10 @@ patches:
           targetPort: 8080
   target:
     kind: Service
-    name: application-seonhee-svc
+    name: <PATCH>
 
 #############################
-##         Deployment       ##
+##        Deployment       ##
 #############################
 ##livenessProbe
 - patch: |-
@@ -73,7 +73,6 @@ patches:
           timeoutSeconds: 5
   target:
     kind: Deployment
-    name: application-seonhee-deploy
 
 ##readinessProbe
 - patch: |-
@@ -88,15 +87,14 @@ patches:
           timeoutSeconds: 5
   target:
     kind: Deployment
-    name: application-seonhee-deploy
 
 - patch: |-
     - op: replace
       path: /metadata/name
-      value: application-seonhee-deploy
+      value: application-adm
   target:
     kind: Deployment
-    name: application-seonhee-deploy
+    name: <PATCH>
 
 
 - patch: |-
@@ -105,7 +103,6 @@ patches:
       value: 8080
   target:
     kind: Deployment
-    name: application-seonhee-deploy
     
 - patch: |-
     - op: add
@@ -117,7 +114,6 @@ patches:
           memory: 1Gi
   target:
     kind: Deployment
-    name: application-seonhee-deploy
 
 #############################
 ##         Ingress         ##
@@ -125,23 +121,22 @@ patches:
 - patch: |-
     - op: replace
       path: /metadata/name
-      value: application-seonhee-ing
+      value: application-adm-ing
   target:
     kind: Ingress
-    name: application-seonhee-ing
+    name: <PATCH>
 
 - patch: |-
     - op: replace
       path: /metadata/annotations
       value:
-        alb.ingress.kubernetes.io/load-balancer-name: "seonhee-app-ing"
+        alb.ingress.kubernetes.io/load-balancer-name: "application-adm-ing"
         alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
         alb.ingress.kubernetes.io/load-balancer-size: small
         alb.ingress.kubernetes.io/network-type: public
         alb.ingress.kubernetes.io/healthcheck-path: "/"
   target:
     kind: Ingress
-    name: application-seonhee-ing
 
 - patch: |-
     - op: add
@@ -153,12 +148,11 @@ patches:
             pathType: Prefix
             backend:
               service:
-                name: application-seonhee-svc
+                name: application-adm
                 port:
                   number: 8080
   target:
     kind: Ingress
-    name: application-seonhee-ing
 
 
 #############################
@@ -167,7 +161,8 @@ patches:
 - patch: |-
     - op: replace
       path: /metadata/name
-      value: application-seonhee
+      value: application-adm
   target:
     kind: Namespace
-    name: application-seonhee
+
+
