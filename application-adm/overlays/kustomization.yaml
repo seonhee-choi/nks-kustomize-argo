@@ -1,51 +1,33 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-#############################
-##        resources        ##
-#############################
 resources:
 - ../../base
 
-
-#############################
-##          Image          ##
-#############################
 images:
-- name: :init  # base/deployment.yaml의 image 명칭과 일치시킴
+- name: :init
   newName: sh-registry.ncr.gov-ntruss.com/application
   newTag: '240802132835'
 
-
-
-#############################
-##        Namespace         ##
-#############################
 namespace: application-seonhee
 
-
-#############################
-##          Labels         ##
-#############################
 commonLabels:
   name: application-seonhee
 
-
-#############################
-##            Patch          ##
-#############################
 patches:
 #############################
-##            Service        ##
+##        Service          ##
 #############################
+# 1. 서비스 이름 변경 (target.name은 base 파일의 이름)
 - patch: |-
     - op: replace
       path: /metadata/name
       value: application-seonhee-svc
   target:
     kind: Service
-    name: application-seonhee-svc # base/service.yaml에 적힌 원본 이름
+    name: application-svc-base
 
+# 2. 서비스 포트 변경 (위에서 바뀐 이름을 target으로 잡음)
 - patch: |-
     - op: replace
       path: /spec/ports
@@ -58,9 +40,18 @@ patches:
     name: application-seonhee-svc
 
 #############################
-##         Deployment       ##
+##       Deployment        ##
 #############################
-##livenessProbe
+# 3. 배포 이름 변경
+- patch: |-
+    - op: replace
+      path: /metadata/name
+      value: application-seonhee-deploy
+  target:
+    kind: Deployment
+    name: application-deploy-base
+
+# 4. LivenessProbe 설정 (바뀐 이름 기준)
 - patch: |-
     - op: replace
       path: /spec/template/spec/containers/0/livenessProbe
@@ -75,7 +66,7 @@ patches:
     kind: Deployment
     name: application-seonhee-deploy
 
-##readinessProbe
+# 5. ReadinessProbe 설정
 - patch: |-
     - op: replace
       path: /spec/template/spec/containers/0/readinessProbe
@@ -90,23 +81,7 @@ patches:
     kind: Deployment
     name: application-seonhee-deploy
 
-- patch: |-
-    - op: replace
-      path: /metadata/name
-      value: application-seonhee-deploy
-  target:
-    kind: Deployment
-    name: application-seonhee-deploy
-
-
-- patch: |-
-    - op: replace
-      path: /spec/template/spec/containers/0/ports/0/containerPort
-      value: 8080
-  target:
-    kind: Deployment
-    name: application-seonhee-deploy
-    
+# 6. 리소스 제한 설정
 - patch: |-
     - op: add
       path: /spec/template/spec/containers/0/resources
@@ -122,14 +97,16 @@ patches:
 #############################
 ##         Ingress         ##
 #############################
+# 7. 인그레스 이름 변경
 - patch: |-
     - op: replace
       path: /metadata/name
       value: application-seonhee-ing
   target:
     kind: Ingress
-    name: application-seonhee-ing
+    name: application-ing-base
 
+# 8. 인그레스 어노테이션(ALB 설정) 수정
 - patch: |-
     - op: replace
       path: /metadata/annotations
@@ -143,6 +120,7 @@ patches:
     kind: Ingress
     name: application-seonhee-ing
 
+# 9. 인그레스 규칙(Routing) 설정
 - patch: |-
     - op: add
       path: /spec/rules
@@ -159,15 +137,3 @@ patches:
   target:
     kind: Ingress
     name: application-seonhee-ing
-
-
-#############################
-##         Namespace       ##
-#############################
-- patch: |-
-    - op: replace
-      path: /metadata/name
-      value: application-seonhee
-  target:
-    kind: Namespace
-    name: application-seonhee
