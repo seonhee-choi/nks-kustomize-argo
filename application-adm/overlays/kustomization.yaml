@@ -1,33 +1,118 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+
 resources:
 - ../../base
-namespace: application-seonhee
-commonLabels:
-  name: application-seonhee
+
 images:
 - name: :init
   newName: sh-registry.ncr.gov-ntruss.com/application
   newTag: '240802132835'
+
+namespace: application-seonhee
+
+commonLabels:
+  name: application-seonhee
+
 patches:
+#############################
+##        Service          ##
+#############################
 - patch: |-
     - op: replace
       path: /metadata/name
       value: application-seonhee-svc
   target:
     kind: Service
-    name: application-base
+    name: application-svc-base
+
+- patch: |-
+    - op: replace
+      path: /spec/ports
+      value:
+        - name: http 
+          port: 8080      # 따옴표 절대 금지! 숫자만!
+          targetPort: 8080 # 숫자만!
+  target:
+    kind: Service
+    name: application-seonhee-svc
+
+#############################
+##       Deployment        ##
+#############################
 - patch: |-
     - op: replace
       path: /metadata/name
       value: application-seonhee-deploy
   target:
     kind: Deployment
-    name: application-base
+    name: application-deploy-base
+
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/livenessProbe
+      value:
+        httpGet:
+          path: /actuator/health/liveness
+          port: 8080
+        initialDelaySeconds: 60 # 숫자만!
+        periodSeconds: 10      # 숫자만!
+        timeoutSeconds: 5       # 숫자만!
+  target:
+    kind: Deployment
+    name: application-seonhee-deploy
+
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/readinessProbe
+      value:
+        httpGet:
+          path: /actuator/health/readiness
+          port: 8080
+        initialDelaySeconds: 60
+        periodSeconds: 10
+        timeoutSeconds: 5
+  target:
+    kind: Deployment
+    name: application-seonhee-deploy
+
+#############################
+##         Ingress         ##
+#############################
 - patch: |-
     - op: replace
       path: /metadata/name
       value: application-seonhee-ing
   target:
     kind: Ingress
-    name: application-base
+    name: application-ing-base
+
+- patch: |-
+    - op: replace
+      path: /metadata/annotations
+      value:
+        alb.ingress.kubernetes.io/load-balancer-name: "seonhee-app-ing"
+        alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+        alb.ingress.kubernetes.io/load-balancer-size: small
+        alb.ingress.kubernetes.io/network-type: public
+        alb.ingress.kubernetes.io/healthcheck-path: "/"
+  target:
+    kind: Ingress
+    name: application-seonhee-ing
+
+- patch: |-
+    - op: add
+      path: /spec/rules
+      value:
+      - http:
+          paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: application-seonhee-svc
+                port:
+                  number: 8080
+  target:
+    kind: Ingress
+    name: application-seonhee-ing
