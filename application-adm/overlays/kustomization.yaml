@@ -1,139 +1,33 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-
 resources:
 - ../../base
-
+namespace: application-seonhee
+commonLabels:
+  name: application-seonhee
 images:
 - name: :init
   newName: sh-registry.ncr.gov-ntruss.com/application
   newTag: '240802132835'
-
-namespace: application-seonhee
-
-commonLabels:
-  name: application-seonhee
-
 patches:
-#############################
-##        Service          ##
-#############################
-# 1. 서비스 이름 변경 (target.name은 base 파일의 이름)
 - patch: |-
     - op: replace
       path: /metadata/name
       value: application-seonhee-svc
   target:
     kind: Service
-    name: application-svc-base
-
-# 2. 서비스 포트 변경 (위에서 바뀐 이름을 target으로 잡음)
-- patch: |-
-    - op: replace
-      path: /spec/ports
-      value:
-        - name: http 
-          port: 8080
-          targetPort: 8080
-  target:
-    kind: Service
-    name: application-seonhee-svc
-
-#############################
-##       Deployment        ##
-#############################
-# 3. 배포 이름 변경
+    name: application-base
 - patch: |-
     - op: replace
       path: /metadata/name
       value: application-seonhee-deploy
   target:
     kind: Deployment
-    name: application-deploy-base
-
-# 4. LivenessProbe 설정 (바뀐 이름 기준)
-- patch: |-
-    - op: replace
-      path: /spec/template/spec/containers/0/livenessProbe
-      value:
-          httpGet:
-            path: /actuator/health/liveness
-            port: 8080
-          initialDelaySeconds: 60
-          periodSeconds: 10
-          timeoutSeconds: 5
-  target:
-    kind: Deployment
-    name: application-seonhee-deploy
-
-# 5. ReadinessProbe 설정
-- patch: |-
-    - op: replace
-      path: /spec/template/spec/containers/0/readinessProbe
-      value:
-          httpGet:
-            path: /actuator/health/readiness
-            port: 8080
-          initialDelaySeconds: 60
-          periodSeconds: 10
-          timeoutSeconds: 5
-  target:
-    kind: Deployment
-    name: application-seonhee-deploy
-
-# 6. 리소스 제한 설정
-- patch: |-
-    - op: add
-      path: /spec/template/spec/containers/0/resources
-      value:
-        requests:
-          memory: 1Gi
-        limits:
-          memory: 1Gi
-  target:
-    kind: Deployment
-    name: application-seonhee-deploy
-
-#############################
-##         Ingress         ##
-#############################
-# 7. 인그레스 이름 변경
+    name: application-base
 - patch: |-
     - op: replace
       path: /metadata/name
       value: application-seonhee-ing
   target:
     kind: Ingress
-    name: application-ing-base
-
-# 8. 인그레스 어노테이션(ALB 설정) 수정
-- patch: |-
-    - op: replace
-      path: /metadata/annotations
-      value:
-        alb.ingress.kubernetes.io/load-balancer-name: "seonhee-app-ing"
-        alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
-        alb.ingress.kubernetes.io/load-balancer-size: small
-        alb.ingress.kubernetes.io/network-type: public
-        alb.ingress.kubernetes.io/healthcheck-path: "/"
-  target:
-    kind: Ingress
-    name: application-seonhee-ing
-
-# 9. 인그레스 규칙(Routing) 설정
-- patch: |-
-    - op: add
-      path: /spec/rules
-      value:
-      - http:
-          paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: application-seonhee-svc
-                port:
-                  number: 8080
-  target:
-    kind: Ingress
-    name: application-seonhee-ing
+    name: application-base

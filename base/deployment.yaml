@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: <PATCH>
+  name: application-deploy-base
 spec:
   selector:
     matchLabels:
@@ -19,22 +19,22 @@ spec:
     spec:
       containers:
       - name: app
-        image: <PATCH>:init
+        image: application-base:init
         imagePullPolicy: Always
         ports:
-        - containerPort: <PATCH>
+        - containerPort: application-base
         readinessProbe: 
           httpGet:
-            path: <PATCH>
-            port: <PATCH>
-          initialDelaySeconds: <PATCH>
-          periodSeconds: <PATCH>
-          timeoutSeconds: <PATCH>
+            path: application-base
+            port: application-base
+          initialDelaySeconds: application-base
+          periodSeconds: application-base
+          timeoutSeconds: application-base
         livenessProbe:
           httpGet:
-            path: <PATCH>
-            port: <PATCH>
-          initialDelaySeconds: <PATCH>
-          periodSeconds: <PATCH>
-          timeoutSeconds: <PATCH>
+            path: application-base
+            port: application-base
+          initialDelaySeconds: application-base
+          periodSeconds: application-base
+          timeoutSeconds: application-base
       terminationGracePeriodSeconds: 30

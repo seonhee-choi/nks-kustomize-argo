@@ -1,13 +1,13 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: <PATCH>
+  name: application-ing-base
   annotations:
-    alb.ingress.kubernetes.io/listen-ports: <PATCH>
-    alb.ingress.kubernetes.io/load-balancer-size: <PATCH>
-    alb.ingress.kubernetes.io/network-type: <PATCH>
-    alb.ingress.kubernetes.io/ssl-certificate-no: <PATCH>
-    alb.ingress.kubernetes.io/ssl-redirect: <PATCH>
-    alb.ingress.kubernetes.io/healthcheck-path: <PATCH>
+    alb.ingress.kubernetes.io/listen-ports: application-base
+    alb.ingress.kubernetes.io/load-balancer-size: application-base
+    alb.ingress.kubernetes.io/network-type: application-base
+    alb.ingress.kubernetes.io/ssl-certificate-no: application-base
+    alb.ingress.kubernetes.io/ssl-redirect: application-base
+    alb.ingress.kubernetes.io/healthcheck-path: application-base
 spec:
   ingressClassName: alb
