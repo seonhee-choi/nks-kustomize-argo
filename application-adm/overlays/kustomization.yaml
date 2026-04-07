@@ -1,30 +1,50 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+#############################
+##        resources        ##
+#############################
 resources:
 - ../../base
 
+
+#############################
+##          Image          ##
+#############################
 images:
-- name: <PATCH>:init
+- name: <PATCH>:init  # base/deployment.yaml의 image 명칭과 일치시킴
   newName: sh-registry.ncr.gov-ntruss.com/application
   newTag: '1.0.15'
 
-namespace: application-seonhee
 
+
+#############################
+##        Namespace         ##
+#############################
+namespace: application-adm
+
+
+#############################
+##          Labels         ##
+#############################
 commonLabels:
-  name: application-seonhee
+  name: application-adm
 
+
+#############################
+##            Patch          ##
+#############################
 patches:
 #############################
-##        Service          ##
+##            Service        ##
 #############################
 - patch: |-
     - op: replace
       path: /metadata/name
-      value: application-seonhee-svc
+      value: application-adm
   target:
     kind: Service
-    name: application-svc-base
+    name: application-adm # base/service.yaml에 적힌 원본 이름
 
 - patch: |-
     - op: replace
@@ -35,55 +55,58 @@ patches:
           targetPort: 8080
   target:
     kind: Service
-    name: application-seonhee-svc
+    name: application-adm
 
 #############################
-##       Deployment        ##
+##         Deployment       ##
 #############################
-- patch: |-
-    - op: replace
-      path: /metadata/name
-      value: application-seonhee-deploy
-  target:
-    kind: Deployment
-    name: application-deploy-base
-
-- patch: |-
-    - op: replace
-      path: /spec/template/spec/containers/0/ports/0/containerPort
-      value: 8080    # <--- 따옴표 없는 순수 숫자여야 합니다!
-  target:
-    kind: Deployment
-    name: application-seonhee-deploy
-
+##livenessProbe
 - patch: |-
     - op: replace
       path: /spec/template/spec/containers/0/livenessProbe
       value:
-        httpGet:
-          path: /actuator/health/liveness
-          port: 8080
-        initialDelaySeconds: 60
-        periodSeconds: 10
-        timeoutSeconds: 5
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
   target:
     kind: Deployment
-    name: application-seonhee-deploy
+    name: application-adm
 
+##readinessProbe
 - patch: |-
     - op: replace
       path: /spec/template/spec/containers/0/readinessProbe
       value:
-        httpGet:
-          path: /actuator/health/readiness
-          port: 8080
-        initialDelaySeconds: 60
-        periodSeconds: 10
-        timeoutSeconds: 5
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
   target:
     kind: Deployment
-    name: application-seonhee-deploy
+    name: application-adm
 
+- patch: |-
+    - op: replace
+      path: /metadata/name
+      value: application-adm
+  target:
+    kind: Deployment
+    name: application-adm
+
+
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/ports/0/containerPort
+      value: 8080
+  target:
+    kind: Deployment
+    name: application-adm
+    
 - patch: |-
     - op: add
       path: /spec/template/spec/containers/0/resources
@@ -94,7 +117,7 @@ patches:
           memory: 1Gi
   target:
     kind: Deployment
-    name: application-seonhee-deploy
+    name: application-adm
 
 #############################
 ##         Ingress         ##
@@ -102,10 +125,10 @@ patches:
 - patch: |-
     - op: replace
       path: /metadata/name
-      value: application-seonhee-ing
+      value: application-adm
   target:
     kind: Ingress
-    name: application-ing-base
+    name: application-adm
 
 - patch: |-
     - op: replace
@@ -118,7 +141,7 @@ patches:
         alb.ingress.kubernetes.io/healthcheck-path: "/"
   target:
     kind: Ingress
-    name: application-seonhee-ing
+    name: application-adm
 
 - patch: |-
     - op: add
@@ -130,9 +153,21 @@ patches:
             pathType: Prefix
             backend:
               service:
-                name: application-seonhee-svc
+                name: application-adm
                 port:
                   number: 8080
   target:
     kind: Ingress
-    name: application-seonhee-ing
+    name: application-adm
+
+
+#############################
+##         Namespace       ##
+#############################
+- patch: |-
+    - op: replace
+      path: /metadata/name
+      value: application-adm
+  target:
+    kind: Namespace
+    name: application-adm

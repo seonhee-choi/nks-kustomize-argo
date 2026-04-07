@@ -1,42 +1,22 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-#############################
-##        resources        ##
-#############################
 resources:
 - ../../base
 
-
-#############################
-##          Image          ##
-#############################
 images:
-- name: :init  # base/deployment.yaml의 image 명칭과 일치시킴
+- name: <PATCH>:init
   newName: sh-registry.ncr.gov-ntruss.com/application
-  newTag: '240802132835'
+  newTag: '1.0.15'
 
-
-
-#############################
-##        Namespace         ##
-#############################
 namespace: application-seonhee
 
-
-#############################
-##          Labels         ##
-#############################
 commonLabels:
   name: application-seonhee
 
-
-#############################
-##            Patch          ##
-#############################
 patches:
 #############################
-##            Service        ##
+##        Service          ##
 #############################
 - patch: |-
     - op: replace
@@ -44,7 +24,7 @@ patches:
       value: application-seonhee-svc
   target:
     kind: Service
-    name: application-seonhee-svc # base/service.yaml에 적힌 원본 이름
+    name: application-svc-base
 
 - patch: |-
     - op: replace
@@ -58,55 +38,52 @@ patches:
     name: application-seonhee-svc
 
 #############################
-##         Deployment       ##
+##       Deployment        ##
 #############################
-##livenessProbe
-- patch: |-
-    - op: replace
-      path: /spec/template/spec/containers/0/livenessProbe
-      value:
-          httpGet:
-            path: /actuator/health/liveness
-            port: 8080
-          initialDelaySeconds: 60
-          periodSeconds: 10
-          timeoutSeconds: 5
-  target:
-    kind: Deployment
-    name: application-seonhee-deploy
-
-##readinessProbe
-- patch: |-
-    - op: replace
-      path: /spec/template/spec/containers/0/readinessProbe
-      value:
-          httpGet:
-            path: /actuator/health/readiness
-            port: 8080
-          initialDelaySeconds: 60
-          periodSeconds: 10
-          timeoutSeconds: 5
-  target:
-    kind: Deployment
-    name: application-seonhee-deploy
-
 - patch: |-
     - op: replace
       path: /metadata/name
       value: application-seonhee-deploy
   target:
     kind: Deployment
-    name: application-seonhee-deploy
-
+    name: application-deploy-base
 
 - patch: |-
     - op: replace
       path: /spec/template/spec/containers/0/ports/0/containerPort
-      value: 8080
+      value: 8080    # <--- 따옴표 없는 순수 숫자여야 합니다!
   target:
     kind: Deployment
     name: application-seonhee-deploy
-    
+
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/livenessProbe
+      value:
+        httpGet:
+          path: /actuator/health/liveness
+          port: 8080
+        initialDelaySeconds: 60
+        periodSeconds: 10
+        timeoutSeconds: 5
+  target:
+    kind: Deployment
+    name: application-seonhee-deploy
+
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/readinessProbe
+      value:
+        httpGet:
+          path: /actuator/health/readiness
+          port: 8080
+        initialDelaySeconds: 60
+        periodSeconds: 10
+        timeoutSeconds: 5
+  target:
+    kind: Deployment
+    name: application-seonhee-deploy
+
 - patch: |-
     - op: add
       path: /spec/template/spec/containers/0/resources
@@ -128,7 +105,7 @@ patches:
       value: application-seonhee-ing
   target:
     kind: Ingress
-    name: application-seonhee-ing
+    name: application-ing-base
 
 - patch: |-
     - op: replace
@@ -159,15 +136,3 @@ patches:
   target:
     kind: Ingress
     name: application-seonhee-ing
-
-
-#############################
-##         Namespace       ##
-#############################
-- patch: |-
-    - op: replace
-      path: /metadata/name
-      value: application-seonhee
-  target:
-    kind: Namespace
-    name: application-seonhee
