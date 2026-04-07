@@ -5,7 +5,7 @@ resources:
 - ../../base
 
 images:
-- name: :init
+- name: <PATCH>:init
   newName: sh-registry.ncr.gov-ntruss.com/application
   newTag: '1.0.15'
 
