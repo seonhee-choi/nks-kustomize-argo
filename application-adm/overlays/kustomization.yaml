@@ -17,7 +17,7 @@ resources:
 #  newTag: '250403144935'
 images:
 - name: <PATCH>:init  # base/deployment.yaml의 image 명칭과 일치시킴
-  newName: sh-registry.ncr.gov-ntruss.com/application
+  newName: gztn3pfr.private-ncr.gov-ntruss.com/application
   newTag: '1.0.15'
 
 

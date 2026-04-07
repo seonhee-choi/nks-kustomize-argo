@@ -17,6 +17,8 @@ spec:
       labels:
         name: <commonLabels>
     spec:
+      imagePullSecrets:
+      - name: regcred
       containers:
       - name: app
         image: <PATCH>:init
