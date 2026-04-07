@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: application-svc-base
+  name: <PATCH>
 spec:
   selector:
     name: app
   ports:
-  - name: application-svc-base
-    port: application-base
-    targetPort: application-base
+  - name: <PATCH>
+    port: <PATCH>
+    targetPort: <PATCH>
   type: NodePort
