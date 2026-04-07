@@ -11,18 +11,15 @@ resources:
 #############################
 ##          Image          ##
 #############################
-#images:
-#- name: <PATCH>:init
-#  newName: gpy9zo0r.kr.private-ncr.ntruss.com/application
-#  newTag: '250403144935'
 images:
 - name: <PATCH>:init  # base/deployment.yaml의 image 명칭과 일치시킴
   newName: sh-registry.ncr.gov-ntruss.com/application
   newTag: '1.0.15'
 
 
+
 #############################
-##       Namespace         ##
+##        Namespace         ##
 #############################
 namespace: application-adm
 
@@ -35,11 +32,11 @@ commonLabels:
 
 
 #############################
-##        	Patch          ##
+##            Patch          ##
 #############################
 patches:
 #############################
-##        	Service        ##
+##            Service        ##
 #############################
 - patch: |-
     - op: replace
@@ -47,7 +44,7 @@ patches:
       value: application-adm
   target:
     kind: Service
-    name: <PATCH>
+    name: application-adm # base/service.yaml에 적힌 원본 이름
 
 - patch: |-
     - op: replace
@@ -58,10 +55,10 @@ patches:
           targetPort: 8080
   target:
     kind: Service
-    name: <PATCH>
+    name: application-adm
 
 #############################
-##        Deployment       ##
+##         Deployment       ##
 #############################
 ##livenessProbe
 - patch: |-
@@ -76,6 +73,7 @@ patches:
           timeoutSeconds: 5
   target:
     kind: Deployment
+    name: application-adm
 
 ##readinessProbe
 - patch: |-
@@ -90,6 +88,7 @@ patches:
           timeoutSeconds: 5
   target:
     kind: Deployment
+    name: application-adm
 
 - patch: |-
     - op: replace
@@ -97,7 +96,7 @@ patches:
       value: application-adm
   target:
     kind: Deployment
-    name: <PATCH>
+    name: application-adm
 
 
 - patch: |-
@@ -106,6 +105,7 @@ patches:
       value: 8080
   target:
     kind: Deployment
+    name: application-adm
     
 - patch: |-
     - op: add
@@ -117,6 +117,7 @@ patches:
           memory: 1Gi
   target:
     kind: Deployment
+    name: application-adm
 
 #############################
 ##         Ingress         ##
@@ -124,22 +125,23 @@ patches:
 - patch: |-
     - op: replace
       path: /metadata/name
-      value: application-adm-ing
+      value: application-adm
   target:
     kind: Ingress
-    name: <PATCH>
+    name: application-adm
 
 - patch: |-
     - op: replace
       path: /metadata/annotations
       value:
-        alb.ingress.kubernetes.io/load-balancer-name: "application-adm-ing"
+        alb.ingress.kubernetes.io/load-balancer-name: "seonhee-app-ing"
         alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
         alb.ingress.kubernetes.io/load-balancer-size: small
         alb.ingress.kubernetes.io/network-type: public
         alb.ingress.kubernetes.io/healthcheck-path: "/"
   target:
     kind: Ingress
+    name: application-adm
 
 - patch: |-
     - op: add
@@ -156,6 +158,7 @@ patches:
                   number: 8080
   target:
     kind: Ingress
+    name: application-adm
 
 
 #############################
@@ -167,6 +170,4 @@ patches:
       value: application-adm
   target:
     kind: Namespace
-
-
-
+    name: application-adm
